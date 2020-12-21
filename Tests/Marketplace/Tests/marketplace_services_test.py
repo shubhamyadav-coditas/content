@@ -330,27 +330,6 @@ class TestHelperFunctions:
         assert os.path.isdir('Tests/Marketplace/Tests/test_data/pack_to_test/Integrations')
         shutil.rmtree('Tests/Marketplace/Tests/test_data/pack_to_test')
 
-    @pytest.mark.parametrize('file_name, result', [
-        ('Author_image.png', False),
-        ('Integration_image.png', True),
-        ('Integration_image.jpeg', False)
-    ])
-    def test_is_integration_image(self, file_name, result):
-        """
-           Given:
-               - Image name of an author.
-               - Image name of integration.
-               - Image name of integration with the wrong extension.
-            When:
-            - Checking whether the image in integration image or not
-           Then:
-               - Validate that the answer is False
-               - Validate that the answer is True
-               - Validate that the answer is False
-       """
-        from Tests.Marketplace.marketplace_services import is_integration_image
-        assert is_integration_image(file_name) == result
-
 
 class TestVersionSorting:
     """ Class for sorting of changelog.json versions
@@ -649,9 +628,16 @@ class TestImagesUpload:
         mocker.patch('builtins.open', mock_open(read_data="image_data"))
         mocker.patch("Tests.Marketplace.marketplace_services.logging")
         dummy_storage_bucket = mocker.MagicMock()
+        dummy_content_repo = mocker.MagicMock()
+        dummy_commit = mocker.MagicMock()
+        dummy_content_repo.commit.return_value = dummy_commit
+        dummy_file = mocker.MagicMock()
+        dummy_commit.diff.return_value = [dummy_file]
+        fake_hash = 'fake_hash'
         dummy_storage_bucket.blob.return_value.name = os.path.join(GCPConfig.STORAGE_BASE_PATH, "TestPack",
                                                                    temp_image_name)
-        task_status, integration_images = dummy_pack.upload_integration_images(storage_bucket=dummy_storage_bucket)
+        task_status, integration_images = dummy_pack.upload_integration_images(dummy_storage_bucket, fake_hash,
+                                                                               fake_hash, dummy_content_repo)
 
         assert task_status
         assert len(expected_result) == len(integration_images)
@@ -680,15 +666,22 @@ class TestImagesUpload:
         mocker.patch("builtins.open", mock_open(read_data="image_data"))
         mocker.patch("Tests.Marketplace.marketplace_services.logging")
         dummy_storage_bucket = mocker.MagicMock()
+        dummy_content_repo = mocker.MagicMock()
+        dummy_commit = mocker.MagicMock()
+        dummy_content_repo.commit.return_value = dummy_commit
+        dummy_file = mocker.MagicMock()
+        dummy_commit.diff.return_value = [dummy_file]
+        fake_hash = 'fake_hash'
         dummy_storage_bucket.blob.return_value.name = os.path.join(GCPConfig.STORAGE_BASE_PATH, "TestPack",
                                                                    temp_image_name)
-        task_status, integration_images = dummy_pack.upload_integration_images(storage_bucket=dummy_storage_bucket)
+        task_status, integration_images = dummy_pack.upload_integration_images(dummy_storage_bucket, fake_hash,
+                                                                               fake_hash, dummy_content_repo)
 
         assert task_status
         assert len(expected_result) == len(integration_images)
         assert integration_images == expected_result
 
-    def test_copy_and_upload_integration_images(self, mocker, dummy_pack):
+    def test_copy_integration_images(self, mocker, dummy_pack):
         """
            Given:
                - Integration image.
@@ -707,7 +700,7 @@ class TestImagesUpload:
         task_status = dummy_pack.copy_integration_images(dummy_prod_bucket, dummy_build_bucket)
         assert task_status
 
-    def test_copy_and_upload_author_image(self, mocker, dummy_pack):
+    def test_copy_author_image(self, mocker, dummy_pack):
         """
            Given:
                - Author image.
@@ -1419,3 +1412,63 @@ class TestGetSuccessfulAndFailedPacks:
         failed_list = [*failed]
         ans = 'TestPack2' in failed_list
         assert ans
+
+
+class TestImageClassification:
+    """ Test class for all image classifications.
+    """
+
+    @pytest.fixture(scope="class")
+    def dummy_pack(self):
+        """ dummy pack fixture
+        """
+        return Pack(pack_name="TestPack", pack_path="dummy_path")
+
+    @pytest.mark.parametrize('file_path, result', [
+        ('Packs/TestPack/Author_image.png', False),
+        ('Packs/TestPack/Integration_image.png', True),
+        ('Packs/TestPack/Integration_image.jpeg', False),
+        ('Integration_image.png', False),
+        ('Integration_pic.png', False),
+    ])
+    def test_is_integration_image(self, file_path, result, dummy_pack):
+        """
+           Given:
+               - File path of an author image.
+               - File path of an integration image.
+               - File path of an integration image with the wrong extension.
+               - File path not starting with Packs/TestPack
+               - File path not containing the 'image' constant
+            When:
+            - Checking whether the image in integration image or not
+           Then:
+               - Validate that the answer is False
+               - Validate that the answer is True
+               - Validate that the answer is False
+               - Validate that the answer is False
+               - Validate that the answer is False
+       """
+        assert dummy_pack.is_integration_image(file_path) is result
+
+    @pytest.mark.parametrize('file_path, result', [
+        ('Packs/TestPack/Author_image.png', True),
+        ('Packs/TestPack/Author_image.jpeg', False),
+        ('Packs/TestPack/Integration_image.png', False),
+        ('Author_image.png', False)
+    ])
+    def test_is_author_image(self, file_path, result, dummy_pack):
+        """
+           Given:
+               - File path of an author image.
+               - File path of an author image with bad suffix.
+               - File path of an integration image.
+               - File path not starting with Packs/TestPack
+            When:
+            - Checking whether the image in integration image or not
+           Then:
+               - Validate that the answer is True
+               - Validate that the answer is False
+               - Validate that the answer is False
+               - Validate that the answer is False
+       """
+        assert dummy_pack.is_author_image(file_path) is result

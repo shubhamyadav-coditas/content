@@ -198,7 +198,7 @@ class Pack(object):
         self._aggregated = False  # weather the pack's rn was aggregated or not.
         self._aggregation_str = ""  # the aggregation string msg when the pack versions are aggregated
         self._uploaded_author_image = False  # whether the pack author image was uploaded or not
-        self._uploaded_integrations_images = []  # the list of all integration images that were uploaded for the pack
+        self._uploaded_integration_images = []  # the list of all integration images that were uploaded for the pack
 
     @property
     def name(self):
@@ -380,7 +380,7 @@ class Pack(object):
     def uploaded_integration_images(self):
         """ str: the list of uploaded integration images
         """
-        return self._uploaded_integrations_images
+        return self._uploaded_integration_images
 
     def _get_latest_version(self):
         """ Return latest semantic version of the pack.
@@ -1665,7 +1665,7 @@ class Pack(object):
                 else:
                     image_gcs_path = pack_image_blob.public_url
 
-                self._uploaded_integrations_images.append(image_name)
+                self._uploaded_integration_images.append(image_name)
                 uploaded_integration_images.append({
                     'name': image_data.get('display_name', ''),
                     'imagePath': image_gcs_path
@@ -1844,6 +1844,7 @@ class Pack(object):
 
         else:
             logging.info(f"No added/modified author image was detected in {self._pack_name} pack.")
+            return True
 
     def cleanup(self):
         """ Finalization action, removes extracted pack folder.

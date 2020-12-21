@@ -760,8 +760,8 @@ def get_images_data(packs_list: list):
         pack_image_data = {pack.name: {}}
         if pack.uploaded_author_image:
             pack_image_data[pack.name][BucketUploadFlow.AUTHOR] = True
-        if pack.uploaded_integrations_images:
-            pack_image_data[pack.name][BucketUploadFlow.INTEGRATION] = pack.uploaded_integrations_images
+        if pack.uploaded_integration_images:
+            pack_image_data[pack.name][BucketUploadFlow.INTEGRATION] = pack.uploaded_integration_images
         if pack_image_data[pack.name]:
             images_data.update(pack_image_data)
 

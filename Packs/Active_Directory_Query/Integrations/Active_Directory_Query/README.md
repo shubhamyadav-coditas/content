@@ -883,8 +883,7 @@ Used in the IAM premium pack.
 |brand|instanceName|success|active|id|username|email|details|
 |---|---|---|---|---|---|---|---|
 | Active Directory Query | IAM_instance_1 | true | false |  | testdemisto2| testdemisto2@paloaltonetworks.com | status: PROVISIONED<br />created: 2020-10-18T17:54:30.000Z<br />activated: 2020-10-18T17:54:30.000Z<br />statusChanged: 2020-10-18T17:54:30.000Z<br />lastLogin: null<br />lastUpdated: 2020-10-18T17:54:30.000Z<br />passwordChanged: null<br />type: {"id": "oty8zfz6plq7b0r830h7"}<br />profile: {"firstName": "Demisto", "lastName": "Test", "mobilePhone": null, "secondEmail": null, "login": "testdemisto2@paloaltonetworks.com", "email": "testdemisto44@paloaltonetworks.com"}<br />credentials: {"provider": {"type": "Active Directory Query", "name": "Active Directory Query"}}}
-
-
+change read me doesn't require version bump
 
 
 Additional Information
